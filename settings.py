@@ -7,7 +7,7 @@ class FACING(Enum): #note the checking of the array goes updown then leftright
     UP = [0, -1]
     DOWN = [0, 1]
 
-GRID_SIZE = 50  # Size of each grid unit
+GRID_SIZE = 70  # Size of each grid unit
 
 
 

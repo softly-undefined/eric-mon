@@ -10,6 +10,7 @@ from maps import Map
 # things left to do:
 #
 # slow the player down!! need to have running shoes for later
+# Idk why this is just the end of me ^^
 #
 # npc movement
 # 
@@ -20,6 +21,7 @@ from maps import Map
 # when update graphics ? work with someone to do it ? 
 # make the interaction text show up on the screen itself, 
 # also make it go through more than one output for long text
+# did a bit of this sprite stuff! 
 #
 
 pygame.init()
@@ -48,14 +50,14 @@ clock = pygame.time.Clock()
 facing = settings.FACING.RIGHT
 
 
-
+#uploads the pron sprite sheet 
 player_sheet = pygame.image.load('pron_sheet.png')
 
 player_images = {
-    "left": pygame.transform.scale(player_sheet.subsurface(pygame.Rect(10, 10, 10, 10)), (50, 50)),
-    "right": pygame.transform.scale(player_sheet.subsurface(pygame.Rect(0, 10, 10, 10)), (50, 50)),
-    "up": pygame.transform.scale(player_sheet.subsurface(pygame.Rect(10, 0, 10, 10)), (50, 50)),
-    "down": pygame.transform.scale(player_sheet.subsurface(pygame.Rect(0, 0, 10, 10)), (50, 50))
+    "left": pygame.transform.scale(player_sheet.subsurface(pygame.Rect(10, 10, 10, 10)), (settings.GRID_SIZE, settings.GRID_SIZE)), #reads the shit and scales to grid size
+    "right": pygame.transform.scale(player_sheet.subsurface(pygame.Rect(0, 10, 10, 10)), (settings.GRID_SIZE, settings.GRID_SIZE)),
+    "up": pygame.transform.scale(player_sheet.subsurface(pygame.Rect(10, 0, 10, 10)), (settings.GRID_SIZE, settings.GRID_SIZE)),
+    "down": pygame.transform.scale(player_sheet.subsurface(pygame.Rect(0, 0, 10, 10)), (settings.GRID_SIZE, settings.GRID_SIZE))
 }
 
 
