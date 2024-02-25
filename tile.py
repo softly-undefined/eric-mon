@@ -1,3 +1,11 @@
+# a Tile defines the contents of a location on the grid.
+# It has a number of attributes, and subclasses like Sign and Door
+# defining a specific set of attributes
+#
+#
+#
+#
+
 class Tile:
     #
     # Need support for battles
@@ -20,6 +28,7 @@ class Tile:
     def interact(self):
         if self.is_interactable:
             print(self.interact_text)
+            #once interact does more it will probably happen here
             
             return True
         return False

@@ -12,67 +12,74 @@ from maps import Map
 # slow the player down!! need to have running shoes for later
 # Idk why this is just the end of me ^^
 #
-# npc movement
+# npc movement (should be done under the tile class?)
 # 
 # THEN haven't even started on the battle screen, everything going along with that
 # creating a more enjoyable game loop
 # going to include pokemon? how should fighting with enemies work?
+# the interaction of a battle mechanic with the current interact mechanics is interesting
+# maybe go with different enemies ? i wanna do some sort of twist on the regular pkmn
+#
+# Things I like/would like to keep about the pokemon game loop:
+# * Levelling system
+# * Probably want turn-based ?
+# * some sort of random encounter to make it seem like more of an alive world.
+#
+#
+#
 #
 # when update graphics ? work with someone to do it ? 
 # make the interaction text show up on the screen itself, 
 # also make it go through more than one output for long text
-# did a bit of this sprite stuff! 
+# did a bit of this sprite stuff! also a bit of map stuff its super interesting
 #
 
+
+
+
+
+
 pygame.init()
-
-
-
 screen = pygame.display.set_mode((settings.SCREEN_WIDTH, settings.SCREEN_HEIGHT))
+
 pygame.display.set_caption('eric-mon')
 
 #defines first map placement
 
 
 
-#draws player at center of screen and defines the place on the map using player_pos[0] player_pos[1]
-#player = pygame.Rect((settings.SCREEN_WIDTH // 2 - settings.GRID_SIZE // 2,
-#                               settings.SCREEN_HEIGHT // 2 - settings.GRID_SIZE // 2,
-#                               settings.GRID_SIZE, settings.GRID_SIZE))
-
-SCREEN_CENTER = [settings.SCREEN_WIDTH // 2 - settings.GRID_SIZE // 2, settings.SCREEN_HEIGHT // 2 - settings.GRID_SIZE // 2]
-player_pos = [settings.SCREEN_WIDTH // 2 - settings.GRID_SIZE // 2, settings.SCREEN_HEIGHT // 2 - settings.GRID_SIZE // 2]
-
+player_pos = [settings.SCREEN_CENTER[0], settings.SCREEN_CENTER[1]]
+#need the two values because its passing the variable by referene
+#player pos is relative to the map, player will still always be in the center of the screen
 
 clock = pygame.time.Clock()
 
-#starts facing right
+#starts facing right, this variable will continually be updated
 facing = settings.FACING.RIGHT
 
 
 #uploads the pron sprite sheet 
 player_sheet = pygame.image.load('pron_sheet.png')
+#uploads the test map
+map_sheet = pygame.transform.scale(pygame.image.load('map_sheet.png'), (settings.GRID_SIZE * 15, settings.GRID_SIZE * 15))
 
+
+# defines the four states of the pron sprite to be used in draw_pron
+# reads the sheet and scales to grid size
 player_images = {
-    "left": pygame.transform.scale(player_sheet.subsurface(pygame.Rect(10, 10, 10, 10)), (settings.GRID_SIZE, settings.GRID_SIZE)), #reads the shit and scales to grid size
-    "right": pygame.transform.scale(player_sheet.subsurface(pygame.Rect(0, 10, 10, 10)), (settings.GRID_SIZE, settings.GRID_SIZE)),
-    "up": pygame.transform.scale(player_sheet.subsurface(pygame.Rect(10, 0, 10, 10)), (settings.GRID_SIZE, settings.GRID_SIZE)),
-    "down": pygame.transform.scale(player_sheet.subsurface(pygame.Rect(0, 0, 10, 10)), (settings.GRID_SIZE, settings.GRID_SIZE))
+    settings.FACING.LEFT: pygame.transform.scale(player_sheet.subsurface(pygame.Rect(10, 10, 10, 10)), (settings.GRID_SIZE, settings.GRID_SIZE)),
+    settings.FACING.RIGHT: pygame.transform.scale(player_sheet.subsurface(pygame.Rect(0, 10, 10, 10)), (settings.GRID_SIZE, settings.GRID_SIZE)),
+    settings.FACING.UP: pygame.transform.scale(player_sheet.subsurface(pygame.Rect(10, 0, 10, 10)), (settings.GRID_SIZE, settings.GRID_SIZE)),
+    settings.FACING.DOWN: pygame.transform.scale(player_sheet.subsurface(pygame.Rect(0, 0, 10, 10)), (settings.GRID_SIZE, settings.GRID_SIZE))
 }
 
 
-def draw_pron():
-    #player position in the playerpos variable
-    if facing == settings.FACING.LEFT:
-        screen.blit(player_images["left"], SCREEN_CENTER)
-    elif facing == settings.FACING.RIGHT:
-        screen.blit(player_images["right"], SCREEN_CENTER)
-    elif facing == settings.FACING.UP:
-        screen.blit(player_images["up"], SCREEN_CENTER)
-    elif facing == settings.FACING.DOWN:
-        screen.blit(player_images["down"], SCREEN_CENTER)
 
-draw_pron()
+
+
+#draws pron facing the direction of facing
+def draw_pron():
+    screen.blit(player_images[facing], settings.SCREEN_CENTER)
 
 #draws the map! inside this function sprite stuff will be done !
 def draw_map():
@@ -97,6 +104,8 @@ def draw_map():
                 else:
                     pygame.draw.rect(screen, (75, 75, 175), (x - offsetx, y - offsety, settings.GRID_SIZE, settings.GRID_SIZE))
 
+    if active_map.name == "TESTING_ZONE":
+        screen.blit(map_sheet, [x - offsetx - (11 * settings.GRID_SIZE), y - offsety - (12 * settings.GRID_SIZE)])
 
 
 
@@ -130,29 +139,23 @@ run = True
 active_map = maps.read_map("TEST_MAP")
 test = 1
 
+# --------------------------------THE RUN LOOP!!!----------------------------------------
+
 while run:
     draw_map()
-    
-
     draw_pron()
-    pygame.display.set_caption(f"{(player_pos[1] // settings.GRID_SIZE)},{(player_pos[0] // settings.GRID_SIZE)}")
-
-    #draw_facing()
+    pygame.display.set_caption(f"{(player_pos[1] // settings.GRID_SIZE)},{(player_pos[0] // settings.GRID_SIZE)}") #mostly for debugging rn
 
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
 
-    # Get the keys pressed
-    keys = pygame.key.get_pressed()
-
-    
+    keys = pygame.key.get_pressed() # Get the keys pressed
 
 
     #checks for interactions
     if keys[pygame.K_i]: #equivalent for clicking a on the gameboy
-        
         active_map.grid[(player_pos[1] // settings.GRID_SIZE) + facing.value[1]][(player_pos[0] // settings.GRID_SIZE) + facing.value[0]].interact()
         
         
@@ -160,6 +163,7 @@ while run:
 
     elif keys[pygame.K_j]: #should eventually allow for sprint and stuff like that?
         print("ooga booga")
+        # do more in here
 
     # MOVEMENT COMMANDS
     # also makes it so when changing direction it takes an extra press of the key so you can turn without moving
@@ -179,6 +183,7 @@ while run:
         if facing == settings.FACING.DOWN and check_direction():
             player_pos[1] += settings.GRID_SIZE  # Move down by one grid unit
         facing = settings.FACING.DOWN
+
 
     pygame.display.update()
     clock.tick(settings.FPS)
