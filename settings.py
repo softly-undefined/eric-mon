@@ -3,7 +3,7 @@ from enum import Enum
 #
 # Defines a whole punch of stuff
 #
-#
+# 
 #
 
 class FACING(Enum): #note the checking of the array goes updown then leftright
@@ -20,6 +20,8 @@ SCREEN_WIDTH = GRID_SIZE * 15
 SCREEN_HEIGHT = GRID_SIZE * 9
 SCREEN_CENTER = [SCREEN_WIDTH // 2 - GRID_SIZE // 2, SCREEN_HEIGHT // 2 - GRID_SIZE // 2]
 
-FPS = 15
+MOVEMENT_SPEED = 0.01
+
+FPS = 60
 
 MOVEMENT_DELAY = 400

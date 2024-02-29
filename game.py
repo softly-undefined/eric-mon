@@ -3,7 +3,7 @@ import settings
 import maps
 from tile import Tile
 from maps import Map
-
+import math
 
 #Eric Bennett, 2/20/24
 #
@@ -48,7 +48,7 @@ pygame.display.set_caption('eric-mon')
 
 
 
-player_pos = [settings.SCREEN_CENTER[0], settings.SCREEN_CENTER[1]]
+player_pos = [3*settings.GRID_SIZE, 3*settings.GRID_SIZE]
 #need the two values because its passing the variable by referene
 #player pos is relative to the map, player will still always be in the center of the screen
 
@@ -76,6 +76,12 @@ player_images = {
 
 
 
+def get_position():
+    return player_pos[0], player_pos[1]
+
+def get_cell_position():
+    return  math.floor(player_pos[1]), math.floor(player_pos[0])
+
 
 #draws pron facing the direction of facing
 def draw_pron():
@@ -84,8 +90,10 @@ def draw_pron():
 #draws the map! inside this function sprite stuff will be done !
 def draw_map():
     global active_map 
-    offsetx = player_pos[0] - (settings.SCREEN_WIDTH // 2 - settings.GRID_SIZE // 2)
-    offsety = player_pos[1] - (settings.SCREEN_HEIGHT // 2 - settings.GRID_SIZE // 2)
+    pos_x, pos_y = get_position()
+
+    offsetx = pos_x - (settings.SCREEN_WIDTH // 2 - settings.GRID_SIZE // 2)
+    offsety = pos_y - (settings.SCREEN_HEIGHT // 2 - settings.GRID_SIZE // 2)
     for row_index, row in enumerate(active_map.grid):
         for col_index, col in enumerate(row):
             x = col_index * settings.GRID_SIZE
@@ -114,38 +122,73 @@ def draw_map():
 def check_direction():
     global active_map 
     #where code to switch maps is
-    facing_tile = active_map.grid[(player_pos[1] // settings.GRID_SIZE) + facing.value[1]][((player_pos[0] // settings.GRID_SIZE) + facing.value[0])]
+    cell_pos_x, cell_pos_y = get_cell_position()
+    
+    facing_tile = active_map.grid[(cell_pos_x // settings.GRID_SIZE) + facing.value[1]][((cell_pos_y // settings.GRID_SIZE) + facing.value[0])]
+    #print(f"facing: {(cell_pos_x // settings.GRID_SIZE) + facing.value[1]}, {((cell_pos_y // settings.GRID_SIZE) + facing.value[0])}")
+    #print(f" player x {player_pos[0]} player y {player_pos[1]}")
+    #print(f" ground? {facing_tile.is_ground}")
     if facing_tile.is_door:
+        print("ABOUT TO TELEPORT")
         player_pos[0] = facing_tile.door_coords[0] * settings.GRID_SIZE
         player_pos[1] = facing_tile.door_coords[1] * settings.GRID_SIZE
         screen.fill((0,0,0)) #maybe do this another way in the future, clears screen
 
-        active_map = maps.read_map(facing_tile.door_map) #FIX HERE
-        test = 2
-        print(test)
-        print(active_map.grid[0][0].is_ground) #its 
+        active_map = maps.read_map(facing_tile.door_map) #FIX HERE ?
+        
         
         print("TELEPORT BWOOoSH")
         return False
 
-
+    
     return facing_tile.is_ground
+
+
+def move_one():
+    #cell_pos_y, cell_pos_x = get_cell_position()
+    
+    player_pos[0] += facing.value[0] # multiply this by movement speed eventually
+    player_pos[1] += facing.value[1]
+    draw_map()
+    draw_pron()
+    
+    
+    if player_pos[0] % settings.GRID_SIZE == 0 and player_pos[1] % settings.GRID_SIZE == 0:
+        return False
+    
+
+    return True
+    #    player_pos[0] += facing.value[0]
+    #    player_pos[1] += facing.value[1]
+    #    draw_map()
+    #    draw_pron()
 
 
 
 
 
 run = True
-active_map = maps.read_map("TEST_MAP")
+active_map = maps.read_map("UP_TOWN")
 test = 1
+num_ticks = 0
+last_time = pygame.time.get_ticks()
+
+
+time_down=0
 
 # --------------------------------THE RUN LOOP!!!----------------------------------------
+draw_map()
+draw_pron()
+
+move = False
+is_moving = False
 
 while run:
+    
     draw_map()
     draw_pron()
-    pygame.display.set_caption(f"{(player_pos[1] // settings.GRID_SIZE)},{(player_pos[0] // settings.GRID_SIZE)}") #mostly for debugging rn
 
+    pygame.display.set_caption(f"{(player_pos[1] // settings.GRID_SIZE)},{(player_pos[0] // settings.GRID_SIZE)}") #mostly for debugging rn
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -153,39 +196,78 @@ while run:
 
     keys = pygame.key.get_pressed() # Get the keys pressed
 
-
     #checks for interactions
+    
     if keys[pygame.K_i]: #equivalent for clicking a on the gameboy
-        active_map.grid[(player_pos[1] // settings.GRID_SIZE) + facing.value[1]][(player_pos[0] // settings.GRID_SIZE) + facing.value[0]].interact()
-        
-        
+        cell_pos_y, cell_pos_x = get_cell_position()
+        active_map.grid[(cell_pos_y // settings.GRID_SIZE) + facing.value[1]][(cell_pos_x // settings.GRID_SIZE) + facing.value[0]].interact()
         
 
     elif keys[pygame.K_j]: #should eventually allow for sprint and stuff like that?
         print("ooga booga")
         # do more in here
 
+    #curr_time = pygame.time.get_ticks()
+    #elapsed_time = last_time - curr_time
+    #last_time = curr_time
+
+    #move_distance = (elapsed_time * 1000)/settings.MOVEMENT_SPEED
+    #move_distance *= settings.GRID_SIZE
+
+    move_distance = 1
+
+
+    
     # MOVEMENT COMMANDS
     # also makes it so when changing direction it takes an extra press of the key so you can turn without moving
-    if keys[pygame.K_a]:  # Ensure the player stays within the screen
-        if facing == settings.FACING.LEFT and check_direction():
-            player_pos[0] -= settings.GRID_SIZE          
-        facing = settings.FACING.LEFT
-    elif keys[pygame.K_d]:  # Ensure the player stays within the screen
-        if facing == settings.FACING.RIGHT and check_direction():
-            player_pos[0] += settings.GRID_SIZE  # Move right by one grid unit
-        facing = settings.FACING.RIGHT
-    elif keys[pygame.K_w]:  # Ensure the player stays within the screen
-        if facing == settings.FACING.UP and check_direction():
-            player_pos[1] -= settings.GRID_SIZE  # Move up by one grid unit
-        facing = settings.FACING.UP
-    elif keys[pygame.K_s]:  # Ensure the player stays within the screen
-        if facing == settings.FACING.DOWN and check_direction():
-            player_pos[1] += settings.GRID_SIZE  # Move down by one grid unit
-        facing = settings.FACING.DOWN
+    
+    if not is_moving: # if not moving
+        
+        direction_check = check_direction()
+        print(f"direction check {direction_check}")
+        if keys[pygame.K_a]:  # Ensure the player stays within the screen
+            time_down+=1
+            if time_down == 10:
+                if facing == settings.FACING.LEFT and direction_check:
+                    move=True
+                time_down = 0
+            facing = settings.FACING.LEFT
+        elif keys[pygame.K_d]:  # Ensure the player stays within the screen
+            time_down+=1
+            if time_down == 10:
+                if facing == settings.FACING.RIGHT and direction_check:
+                    move=True
+                time_down = 0
+            facing = settings.FACING.RIGHT
+        elif keys[pygame.K_w]:  # Ensure the player stays within the screen
+            time_down+=1
+            if time_down == 10:
+                if facing == settings.FACING.UP and direction_check:
+                    move=True
+                time_down = 0
+                
+            facing = settings.FACING.UP
+        elif keys[pygame.K_s]:  # Ensure the player stays within the screen
+            time_down+=1
+            if time_down == 10:
+                if facing == settings.FACING.DOWN and direction_check:
+                    move=True
+            facing = settings.FACING.DOWN
+        else:
+            move = False
+            time_down = 0
+    
+    
+    if move:
+        is_moving = move_one()
+        if not is_moving:
+            move = False
+        #print(is_moving)
+        
 
-
+    num_ticks += 1
     pygame.display.update()
     clock.tick(settings.FPS)
+    
 
 pygame.quit()
