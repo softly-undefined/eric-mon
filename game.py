@@ -9,8 +9,10 @@ import math
 #
 # things left to do:
 #
-# slow the player down!! need to have running shoes for later
-# Idk why this is just the end of me ^^
+#
+# Get off the tick based system of movement !!! Alphas and fancy shi
+# basically make it a greater>= expected location to check for grid placement and snap back
+# will also allow for sprinting halfway through a block
 #
 # npc movement (should be done under the tile class?)
 # 
@@ -24,7 +26,6 @@ import math
 # * Levelling system
 # * Probably want turn-based ?
 # * some sort of random encounter to make it seem like more of an alive world.
-#
 #
 #
 #
@@ -143,17 +144,20 @@ def check_direction():
     
     return facing_tile.is_ground
 
-
-def move_one():
+#maybe in the future use target position
+#tween: given alpha moving to x
+def move_one(is_moving): 
     #cell_pos_y, cell_pos_x = get_cell_position()
-    
-    player_pos[0] += facing.value[0] # multiply this by movement speed eventually
-    player_pos[1] += facing.value[1]
-    draw_map()
-    draw_pron()
+    if is_moving:
+        
+        player_pos[0] += facing.value[0] * movement_speed.value # multiply this by movement speed eventually
+        player_pos[1] += facing.value[1] * movement_speed.value # 
+        draw_map()
+        draw_pron()
     
     
     if player_pos[0] % settings.GRID_SIZE == 0 and player_pos[1] % settings.GRID_SIZE == 0:
+        #runs every time that you hit a grid line
         return False
     
 
@@ -163,7 +167,11 @@ def move_one():
     #    draw_map()
     #    draw_pron()
 
-
+def display_message(text):
+    can_move = False
+    for i in range(100000):
+        print(f"{i} cum")
+    can_move = True
 
 
 
@@ -172,7 +180,8 @@ active_map = maps.read_map("UP_TOWN")
 test = 1
 num_ticks = 0
 last_time = pygame.time.get_ticks()
-
+movement = settings.MOVEMENT.WALK
+can_move = True
 
 time_down=0
 
@@ -200,71 +209,71 @@ while run:
     
     if keys[pygame.K_i]: #equivalent for clicking a on the gameboy
         cell_pos_y, cell_pos_x = get_cell_position()
-        active_map.grid[(cell_pos_y // settings.GRID_SIZE) + facing.value[1]][(cell_pos_x // settings.GRID_SIZE) + facing.value[0]].interact()
-        
+        if active_map.grid[(cell_pos_y // settings.GRID_SIZE) + facing.value[1]][(cell_pos_x // settings.GRID_SIZE) + facing.value[0]].is_interactable:
+            display_message(active_map.grid[(cell_pos_y // settings.GRID_SIZE) + facing.value[1]][(cell_pos_x // settings.GRID_SIZE) + facing.value[0]].interact_text)
 
-    elif keys[pygame.K_j]: #should eventually allow for sprint and stuff like that?
-        print("ooga booga")
-        # do more in here
+    if keys[pygame.K_j]:
+        movement = settings.MOVEMENT.RUN
+    elif keys[pygame.K_p]:
+        movement = settings.MOVEMENT.BIKE
+    else:
+        movement = settings.MOVEMENT.WALK
 
+
+
+    #alpha time stuff goes here
     #curr_time = pygame.time.get_ticks()
+
+
     #elapsed_time = last_time - curr_time
     #last_time = curr_time
 
     #move_distance = (elapsed_time * 1000)/settings.MOVEMENT_SPEED
     #move_distance *= settings.GRID_SIZE
 
-    move_distance = 1
+    #move_distance = 1
 
 
     
     # MOVEMENT COMMANDS
     # also makes it so when changing direction it takes an extra press of the key so you can turn without moving
-    
-    if not is_moving: # if not moving
-        
-        direction_check = check_direction()
-        print(f"direction check {direction_check}")
-        if keys[pygame.K_a]:  # Ensure the player stays within the screen
-            time_down+=1
-            if time_down == 10:
-                if facing == settings.FACING.LEFT and direction_check:
-                    move=True
-                time_down = 0
-            facing = settings.FACING.LEFT
-        elif keys[pygame.K_d]:  # Ensure the player stays within the screen
-            time_down+=1
-            if time_down == 10:
-                if facing == settings.FACING.RIGHT and direction_check:
-                    move=True
-                time_down = 0
-            facing = settings.FACING.RIGHT
-        elif keys[pygame.K_s]:  # Ensure the player stays within the screen
-            time_down+=1
-            if time_down == 10:
-                if facing == settings.FACING.DOWN and direction_check:
-                    move=True
-            facing = settings.FACING.DOWN
-        elif keys[pygame.K_w]:  # Ensure the player stays within the screen
-            time_down+=1
-            if time_down == 10:
-                if facing == settings.FACING.UP and direction_check:
-                    move=True
-                time_down = 0
-            facing = settings.FACING.UP
-        
-        else:
-            move = False
-            time_down = 0
-    
-    
-    if move:
-        is_moving = move_one() #moves one grid space distance
-        if not is_moving:
-            move = False
-        #print(is_moving)
-        
+    if can_move:
 
+
+        if not is_moving: # if not moving
+            
+            direction_check = check_direction()
+            if movement == settings.MOVEMENT.WALK:
+                movement_speed = settings.MOVEMENT.WALK
+            elif movement == settings.MOVEMENT.RUN:
+                movement_speed = settings.MOVEMENT.RUN
+            else:
+                movement_speed = settings.MOVEMENT.BIKE
+
+            
+            #print(f"direction check {direction_check}")
+            if keys[pygame.K_a]:  # Ensure the player stays within the screen 
+                if facing == settings.FACING.LEFT and direction_check:
+                    is_moving = True               
+                facing = settings.FACING.LEFT
+            elif keys[pygame.K_d]:  # Ensure the player stays within the screen
+                if facing == settings.FACING.RIGHT and direction_check:
+                    is_moving = True 
+                facing = settings.FACING.RIGHT
+            elif keys[pygame.K_s]:  # Ensure the player stays within the screen
+                if facing == settings.FACING.DOWN and direction_check:
+                    is_moving = True 
+                facing = settings.FACING.DOWN
+            elif keys[pygame.K_w]:  # Ensure the player stays within the screen
+                if facing == settings.FACING.UP and direction_check:
+                    is_moving = True 
+                facing = settings.FACING.UP
+        
+        is_moving = move_one(is_moving)
+        print(is_moving)
+    
+        
+    
     num_ticks += 1
     pygame.display.update()
     clock.tick(settings.FPS)

@@ -24,14 +24,7 @@ class Tile:
 
 
         self.is_sprite = is_sprite
-    
-    def interact(self):
-        if self.is_interactable:
-            print(self.interact_text)
-            #once interact does more it will probably happen here
-            
-            return True
-        return False
+
 
 class Sign(Tile):
     def __init__(self, text):
