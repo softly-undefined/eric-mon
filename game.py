@@ -239,27 +239,27 @@ while run:
                     move=True
                 time_down = 0
             facing = settings.FACING.RIGHT
-        elif keys[pygame.K_w]:  # Ensure the player stays within the screen
-            time_down+=1
-            if time_down == 10:
-                if facing == settings.FACING.UP and direction_check:
-                    move=True
-                time_down = 0
-                
-            facing = settings.FACING.UP
         elif keys[pygame.K_s]:  # Ensure the player stays within the screen
             time_down+=1
             if time_down == 10:
                 if facing == settings.FACING.DOWN and direction_check:
                     move=True
             facing = settings.FACING.DOWN
+        elif keys[pygame.K_w]:  # Ensure the player stays within the screen
+            time_down+=1
+            if time_down == 10:
+                if facing == settings.FACING.UP and direction_check:
+                    move=True
+                time_down = 0
+            facing = settings.FACING.UP
+        
         else:
             move = False
             time_down = 0
     
     
     if move:
-        is_moving = move_one()
+        is_moving = move_one() #moves one grid space distance
         if not is_moving:
             move = False
         #print(is_moving)
